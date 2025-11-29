@@ -130,5 +130,18 @@ export async function updatePerk(req, res, next) {
 }
 // TODO 1: Implement delete a perk by ID
 export async function deletePerk(req, res, next) {
- 
+  try {
+    const perk = await Perk.findById(req.params.id);
+    if (!perk) return res.status(404).json({ message: 'Perk not found' });
+    
+    // Check if the user owns the perk
+    if (perk.createdBy.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Unauthorized to delete this perk' });
+    }
+    
+    await Perk.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: 'Perk deleted successfully' });
+  } catch (err) {
+    next(err);
+  }
 }
